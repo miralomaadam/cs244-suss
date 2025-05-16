@@ -1,0 +1,3 @@
+[submodule "cs244-linux-5.19.10"]
+	path = cs244-linux-5.19.10
+	url = https://github.com/miralomaadam/cs244-linux-5.19.10.git
