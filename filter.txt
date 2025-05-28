@@ -1,0 +1,10 @@
+get all relevant lines from curl log:
+grep '^[0-9]\+:[0-9]\+:[0-9]\+\.[0-9]\+' $LOGFILE
+
+get the curl log:
+curl --output /dev/null --trace - --trace-time 34.58.215.33/assets/1G.bin >> $LOGFILE
+
+
+full thing (log has unneeded hexdump):
+
+curl --output /dev/null --trace - --trace-time 34.58.215.33/assets/1G.bin | grep '^[0-9]\+:[0-9]\+:[0-9]\+\.[0-9]\+' > $LOGFILE
