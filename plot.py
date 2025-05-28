@@ -48,7 +48,7 @@ with open(logfile, encoding='utf-8') as f:
         if total_bytes > 12 * 1024 * 1024: break
 
 # ----- plotting -----
-plt.step(times, totals, where='pre')
+plt.step(times, totals, where='post')
 plt.xlabel('Time since first timestamp (s)')
 plt.ylabel('Cumulative bytes received')
 plt.title('Received bytes vs. time')
