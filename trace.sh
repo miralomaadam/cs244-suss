@@ -13,7 +13,7 @@
 set -euo pipefail
 
 # ---------- configuration ----------
-ALLOWED=(1M.bin 1K.bin 1G.bin)   # add/remove entries as you wish
+ALLOWED=(1M.bin 12M.bin 1K.bin 1G.bin)   # add/remove entries as you wish
 # SERVER_IP="104.154.51.134"
 SERVER_IP="127.0.0.1"
 ASSETS_PATH="/assets"

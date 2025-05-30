@@ -46,6 +46,7 @@ ALLOWED_FILES = {
     "1K.bin",
     "1M.bin",
     "1G.bin",
+    "12M.bin"
 }
 
 TRACE_DIR = Path("traces")
