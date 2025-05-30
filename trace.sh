@@ -51,6 +51,7 @@ fi
 # 3. run the command
 echo "Fetching ${DOWNLOAD} … output to ${LOGFILE}"
 curl --output /dev/null \
+     -H "Connection: close" \
      --trace - \
      --trace-time \
      "http://${SERVER_IP}${ASSETS_PATH}/${DOWNLOAD}" |
