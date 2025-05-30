@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-plot_rx.py - Plot cumulative bytes received vs. time from a curl trace log.
+plot.py - Plot cumulative bytes received vs. time from a curl trace log.
 
-Usage: python plot_rx.py logfile [outfile.png]
+Usage: python3 plot.py logfile [outfile.png]
 """
 import re
 import sys
@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 from functools import reduce
 
 if len(sys.argv) < 2:
-    sys.exit("Usage:  python plot_rx.py logfile [outfile.png]")
+    sys.exit("Usage:  python3 plot.py logfile [outfile.png]")
 
 logfile = sys.argv[1]
 save_to = sys.argv[2] if len(sys.argv) > 2 else None
