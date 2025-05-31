@@ -108,7 +108,99 @@ struct bictcp {
 	u32	end_seq;	/* end_seq of the round */
 	u32	last_ack;	/* last time when the ACK spacing is close */
 	u32	curr_rtt;	/* the minimum rtt of current round */
+
+	// SUSS ZONE ඞ
+	u32 suss_current_round_start_time;
+	// start and end seqnos of data train
+	u32 suss_data_train_start;
+	u32 suss_data_train_end;
+	u8 suss_round_number;
+	u8 suss_should_grow;
+	u8 suss_recv_blue_ack;
+	u8 suss_min_rtt_update_round;
+	// END SUSS ZONE ඞ
 };
+
+// SUSS FUNCTION ඞ
+static inline u8 should_grow_fast(struct sock *sk, u32 delta_t_bat) 
+{
+	struct bitcp *cubic_data = inet_csk_cak(sk);
+	struct tcp_sock *sock = tcp_sk(sk);
+
+	u8 result = 0;
+
+	/* CONDITION 1: (2)
+	\Delta t^{at}_{i+1} <= minRTT / 2
+
+	estimate \Delta t^{at}_{i+1}: (3)
+	= 2 * cwnd_{i-1} / BtlBw
+
+	BtlBw = bottleneck bandwidth,
+	estimate: (4)
+	\Delta t^{at}_{i} ~= cwnd_{i-1} / BtlBw
+
+	estimate: (5)
+	\Delta t^{at}_{i+1} ~= \Delta t^{at}_{i} * 2
+
+	thus we get: (6)
+	\Delta t^{at}_{i} <= minRTT / 4
+
+	estimate \Delta t^{at}_{i} in clocking period: (9)
+	\Delta t^{at}_{i} = delta_t_bat * cwnd_{i-1} / S^{Bdt}_{i-1}
+
+	S^{Bdt}_i : amount of data sent in the clocking period for round (i)
+	*/
+	
+		// pg 155, eq 9: delta_t_at = cwnd_{i-1} / S^{Bdt}_{i-1} * delta_t_bat
+		// cwnd_{i-1} / S^{Bdt}_{i-1} : this ratio becomes 2^{i - 2}
+
+	u32 delta_t_at = delta_t_bat * (1 << (cubic_data->suss_round_number - 2));
+	if (delta_t_at <= (cubic_data->delay_min >> 2)) {
+		result = 1;
+	} else {
+		result = 0; // technically redundant
+	}
+
+	/* CONDITION 2
+	we want: moRTT_{i+1} <= 1.125 * minRTT
+	
+	moRTT_{i+1} = moRTT_i + (moRTT_i - minRTT) / r    (7), r = # of rounds ago minRTT was updated
+
+	we get:
+
+	moRTT_i + (moRTT_i - minRTT) / r <= 1.125 * minRTT
+
+	multiply by r and move some terms:
+	
+	(r + 1)moRTT_i <= (1.125r + 1) * minRTT
+
+	multiply both sides by 8
+	8 * (r + 1) * moRTT <= 9r * minRTT + 8 * minRTT
+	*/
+
+	// need condition 1 to be true
+	if (result == 1) {
+		
+		// decimal math with integers lol
+		u32 r = cubic_data->suss_round_number - cubic_data->suss_min_rtt_update_round;
+
+		// if we were allowed to use decimals, this would be the code
+		// if (cubic_data->curr_rtt + (cubic_data->curr_rtt - cubic_data->delay_min) / r <= 1.125 * cubic_data->delay_min)
+		
+		u32 lhs = (r + 1) * cubic_data->curr_rtt * 8; // curr_rtt is moRTT (hystart)
+		u32 rhs = 9 * r * cubic_data->delay_min + 8 * cubic_data->delay_min;
+
+		if (lhs <= rhs) {
+			result = 1;
+		} else {
+			result = 0;
+		}
+	}
+
+	printk(KERN_INFO, "SUSS calculated the growth factor should be %d\n", 2 << result);
+	return result;
+}
+// END SUSS FUNCTION ඞ
 
 static inline void bictcp_reset(struct bictcp *ca)
 {
@@ -137,6 +229,31 @@ static void cubictcp_init(struct sock *sk)
 	struct bictcp *ca = inet_csk_ca(sk);
 
 	bictcp_reset(ca);
+
+	// SUSS ZONE ඞ
+	struct tcp_sock *sock = tcp_sk(sk);
+
+	// these don't need to be initialized
+	ca->suss_current_round_start_time = 0;
+	ca->suss_recv_blue_ack = 0;
+
+	// start and end seqnos of data train
+	ca->suss_data_train_start = sock->snd_nxt;
+	// page 153 -> initial window size is 10, mss = maximum segment size
+	ca->suss_data_train_end = sock->snd_nxt + (10 * sock->mss_cache) - 1;
+	ca->suss_round_number = 1; // first round
+	ca->suss_should_grow = 1; // start growing
+
+	// should this be initialized?
+	ca->suss_min_rtt_update_round = 1;
+
+	if (suss) {
+		sock->suss_state = SUSS_CLOCK;
+	} else {
+		sock->suss_state = SUSS_DONE;
+	}
+
+	// END SUSS ZONE ඞ
 
 	if (hystart)
 		bictcp_hystart_reset(sk);

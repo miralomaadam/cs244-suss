@@ -425,6 +425,14 @@ struct tcp_sock {
 	// END SUSS ZONE ඞ
 };
 
+// SUSS ZONE ඞ
+#define SUSS_UNINIT 0
+#define SUSS_CLOCK  1
+#define SUSS_PACING 2
+#define SUSS_STOP_GROW 3
+#define SUSS_DONE 4
+// END SUSS ZONE ඞ
+
 enum tsq_enum {
 	TSQ_THROTTLED,
 	TSQ_QUEUED,
