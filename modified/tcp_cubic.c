@@ -31,6 +31,12 @@
 #include <linux/math64.h>
 #include <net/tcp.h>
 
+// SUSS ZONE ඞ
+static int suss_enable = 0;
+module_param(suss_enable, int, 0644);
+MODULE_DESCRIPTION(suss_enable, "0 is off, 1 is on ඞ");
+// END SUSS ZONE ඞ
+
 #define BICTCP_BETA_SCALE    1024	/* Scale factor beta calculation
 					* max_cwnd = snd_cwnd * beta
 					*/
