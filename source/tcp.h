@@ -413,16 +413,6 @@ struct tcp_sock {
 	 */
 	struct request_sock __rcu *fastopen_rsk;
 	struct saved_syn *saved_syn;
-
-	// SUSS ZONE
-	// less than 40 bytes ✅
-	u64 suss_pacing_rate;
-	u64 suss_pacing_start;
-	u32 suss_max_cwnd;
-	u32 suss_flow_id;
-	u8 suss_state;
-	u8 suss_k;
-	// END SUSS ZONE
 };
 
 enum tsq_enum {
