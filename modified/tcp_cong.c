@@ -188,11 +188,11 @@ void tcp_init_congestion_control(struct sock *sk)
 {
 	struct inet_connection_sock *icsk = inet_csk(sk);
 
-	// SUSS ZONE
+	// SUSS ZONE ඞ
 	struct tcp_sock *sock = tcp_sk(sk);
 	get_random_bytes(&sock->suss_flow_id, sizeof(sock->suss_flow_id));
 	printk(KERN_INFO, "Starting SUSS with flow id %d\n", sock->suss_flow_id);
-	// END SUSS ZONE
+	// END SUSS ZONE ඞ
 
 	tcp_sk(sk)->prior_ssthresh = 0;
 	if (icsk->icsk_ca_ops->init)
